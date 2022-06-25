@@ -1,0 +1,13 @@
+{
+	"name": "Горячие клавиши Nurkassa",
+	"version": "1.0",
+	"manifest_version": 3,
+	"content_scripts": [
+	 	{
+			"matches": [
+	    		"https://nurkassa.kz/pos/*/sales"
+	    	],
+	    	"js": ["content.js"]
+	  	}
+	]
+}
