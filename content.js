@@ -80,6 +80,25 @@ function run() {
 		}
 		document.querySelector('label[for='+ id +']').innerText += ' [ ' + cfg.keys[id] + ' ]'
 	}
+
+
+	var leftSide = document.querySelector('div.extended-preview.offset-md-3.offset-lg-0.col-md-6.col-lg-3');
+	var autoCheckTextareaHTML = '<textarea id="autoCheckTextarea" placeholder="Вставьте таблицу с заказом"></textarea>';
+	leftSide.insertAdjacentHTML('afterbegin', autoCheckTextareaHTML);
+	var autoCheckTextarea = document.getElementById('autoCheckTextarea');
+	autoCheckTextarea.addEventListener('change', attempt.bind(null, () => {
+		if (autoCheckTextarea.value === '') return;
+		let splittedByN = autoCheckTextarea.value.split('\n');
+		let posN = 0;
+		let inter = setInterval(() => {
+			addPosition(splittedByN[posN].split('\t'));
+			posN++;
+			if (posN >= splittedByN.length) {
+				alert('Чек составлен.')
+				clearInterval(inter)
+			} 
+		}, 300);
+	}));
 }
 function attempt(callback, ...args) {
 	try { callback(...args); }
@@ -88,6 +107,12 @@ function attempt(callback, ...args) {
 		console.log(error.stack);
 	}
 }
-
+function addPosition(splittedByT) {
+	if (['Код', 'Итог:'].includes(splittedByT[0])) return;
+	elements.goodsName.value = splittedByT[1];
+	elements.goodsQuantity.value = splittedByT[2];
+	elements.goodsPrice.value = splittedByT[4];
+	elements.addPosition.dispatchEvent(new Event('click', {bubbles: true}));
+}
 
 attempt(run);
