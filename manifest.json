@@ -1,6 +1,6 @@
 {
-	"name": "Горячие клавиши Nurkassa",
-	"version": "1.0",
+	"name": "Siberian Nurkassa",
+	"version": "22.6.29",
 	"manifest_version": 3,
 	"content_scripts": [
 	 	{
