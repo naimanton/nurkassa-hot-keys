@@ -1,6 +1,6 @@
 {
 	"name": "Siberian Nurkassa",
-	"version": "22.6.29",
+	"version": "2023-12-05",
 	"manifest_version": 3,
 	"content_scripts": [
 	 	{
