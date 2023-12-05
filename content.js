@@ -83,36 +83,86 @@ function run() {
 
 
 	var leftSide = document.querySelector('div.extended-preview.offset-md-3.offset-lg-0.col-md-6.col-lg-3');
-	var autoCheckTextareaHTML = '<textarea id="autoCheckTextarea" placeholder="Вставьте таблицу с заказом"></textarea>';
+	var autoCheckTextareaHTML = '<textarea id="autoCheckTextarea" placeholder="Вставьте таблицу с заказом (двойным кликом открывается меню режимов)"></textarea>';
 	leftSide.insertAdjacentHTML('afterbegin', autoCheckTextareaHTML);
 	var autoCheckTextarea = document.getElementById('autoCheckTextarea');
 	autoCheckTextarea.addEventListener('change', attempt.bind(null, () => {
 		if (autoCheckTextarea.value === '') return;
 		let splittedByN = autoCheckTextarea.value.split('\n');
 		let posN = 0;
-		let inter = setInterval(() => {
-			addPosition(splittedByN[posN].split('\t'));
-			posN++;
-			if (posN >= splittedByN.length) {
-				alert('Чек составлен.')
-				clearInterval(inter)
-			} 
-		}, 300);
+		interFunc(splittedByN, posN, 300);
+	}));
+	autoCheckTextarea.addEventListener('keydown', attempt.bind(null, (e) => {
+		if (!e.ctrlKey || e.key !== 'Delete' || e.repeat) return;
+		var action = prompt(
+			'Впишите номер пункта, который соответствует нужному режиму автоматического чека:\n\n'+
+			'1) Обычный режим (вводная таблица должна содержать цены продуктов)\n' +
+			'2) Режим ручного указывания цен'
+		);
+		if (action === null) return;
+		if (action == '1') {
+			interFunc = interFuncPlain;
+			alert('Режим изменен.')
+			return;
+		}
+		if (action == '2') {
+			interFunc = interFuncNoPrice;
+			alert('Режим изменен.')
+			return;
+		}
+
 	}));
 }
 function attempt(callback, ...args) {
 	try { callback(...args); }
 	catch (error) {
-		alert('Ошибка в расширении Горячие клавиши Nurkassa.');
+		alert('Ошибка в расширении Nurkassa.');
 		console.log(error.stack);
 	}
 }
-function addPosition(splittedByT) {
-	if (['Код', 'Итог:'].includes(splittedByT[0])) return;
+function addPosition(splittedByT, hasPrice) {
+	if (['Код', 'Итог:', ''].includes(splittedByT[0])) return;
+	var price;
+	if (hasPrice) {
+		price = splittedByT[4];
+	}
+	else {
+		price = prompt('Укажите цену для продукта:\n\n' + splittedByT[1]);
+		if (price === null) return false;
+		for (;!isFinite(price);) {
+			price = prompt(
+				'Указанная цена должна быть числом! Попробуйте еще раз.\n\n' +
+				'Укажите цену для продукта:\n\n' + splittedByT[1]
+			);
+			if (price === null) {
+				return false;
+			}
+		}
+	}
 	elements.goodsName.value = splittedByT[1];
 	elements.goodsQuantity.value = splittedByT[2];
-	elements.goodsPrice.value = splittedByT[4];
+	elements.goodsPrice.value = price;
 	elements.addPosition.dispatchEvent(new Event('click', {bubbles: true}));
+	return true;
 }
-
+function interFuncPlain(splittedByN, posN, ms) {
+	let inter = setInterval(() => {
+		addPosition(splittedByN[posN].split('\t'), true);
+		posN++;
+		if (posN >= splittedByN.length) {
+			alert('Чек составлен.')
+			clearInterval(inter)
+		} 
+	}, ms);
+}
+function interFuncNoPrice(splittedByN, posN) {
+	for (;posN < splittedByN.length;) {
+		var canContinue = addPosition(splittedByN[posN].split('\t'), false);
+		if (!canContinue) {
+			break;
+		}
+		posN++;
+	}
+}
+var interFunc = interFuncPlain;
 attempt(run);
