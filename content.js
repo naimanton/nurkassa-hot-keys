@@ -90,29 +90,46 @@ function run() {
 		if (autoCheckTextarea.value === '') return;
 		let splittedByN = autoCheckTextarea.value.split('\n');
 		let posN = 0;
-		let inter = setInterval(() => {
-			addPosition(splittedByN[posN].split('\t'));
-			posN++;
-			if (posN >= splittedByN.length) {
-				alert('Чек составлен.')
-				clearInterval(inter)
-			} 
-		}, 300);
+		interFunc(splittedByN, posN, 300);
 	}));
 }
 function attempt(callback, ...args) {
 	try { callback(...args); }
 	catch (error) {
-		alert('Ошибка в расширении Горячие клавиши Nurkassa.');
+		alert('Ошибка в расширении Nurkassa.');
 		console.log(error.stack);
 	}
 }
 function addPosition(splittedByT) {
-	if (['Код', 'Итог:'].includes(splittedByT[0])) return;
+	if (['Код', 'Итог:', ''].includes(splittedByT[0])) return;
+	var price = splittedByT[4];
+	if (price.length === 0) {
+		price = prompt('Укажите цену для продукта:\n\n' + splittedByT[1]);
+		if (price === null) return false;
+		for (;!isFinite(price);) {
+			price = prompt(
+				'Указанная цена должна быть числом! Попробуйте еще раз.\n\n' +
+				'Укажите цену для продукта:\n\n' + splittedByT[1]
+			);
+			if (price === null) {
+				return false;
+			}
+		}
+	}
 	elements.goodsName.value = splittedByT[1];
 	elements.goodsQuantity.value = splittedByT[2];
-	elements.goodsPrice.value = splittedByT[4];
+	elements.goodsPrice.value = price;
 	elements.addPosition.dispatchEvent(new Event('click', {bubbles: true}));
+	return true;
 }
-
+function interFunc(splittedByN, posN, ms) {
+	let inter = setInterval(() => {
+		addPosition(splittedByN[posN].split('\t'));
+		posN++;
+		if (posN >= splittedByN.length) {
+			alert('Чек составлен.')
+			clearInterval(inter)
+		} 
+	}, ms);
+}
 attempt(run);
